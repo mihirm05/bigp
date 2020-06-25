@@ -1,5 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
+import random 
 
 #extract dataframes corresponding to countries
 def countryDF(country, dataframe):
@@ -20,10 +21,8 @@ def plotQuantities(qty1, qty2, xlabel, ylabel, label, title):
     plt.legend()
     plt.show()
 
-# Plot the function, the prediction and the 95% confidence interval based on
-# the MSE
-
-def plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTest, countryQuantityTest, yearsPredict, countryQuantityPredict, ylabel, sigma):
+# Plot the function, the prediction and the 95% confidence interval based on the MSE
+def plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTest, countryQuantityTest, yearsPredict, countryQuantityPredict, ylabel, sigma, regression_type):
     plt.figure()
 
     #plt.plot(x, Y, 'r--',label=r'$f(x) = x\,\sin(x)$')
@@ -38,17 +37,55 @@ def plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTes
     #         np.concatenate([y_pred - 1.9600 * sigma,
     #                        (y_pred + 1.9600 * sigma)[::-1]])[:,6],
     #         alpha=1, fc='b', ec='None', label='95% confidence interval')
-
-
-    plt.fill_between(yearsPredict.flat, (countryQuantityPredict.flat-2*sigma), (countryQuantityPredict.flat+2*sigma), 
+    
+    if regression_type == 'Gaussian': 
+        plt.fill_between(yearsPredict.flat, (countryQuantityPredict.flat-2*sigma), (countryQuantityPredict.flat+2*sigma), 
                      color='green',alpha=0.5,label='95% confidence interval')
     plt.ylabel(ylabel)
     plt.xlabel('Year')
     plt.legend()
 
+#error calculation between predicted value and ground truth
 def errorPlot(qty1, error, xlabel, ylabel):
     plt.plot(qty1[::-1],error.T)
     plt.plot(qty1[::-1],np.zeros((len(qty1),1)),'k--')
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
+
+#matrix randomizer
+def randomizer(countryQuantity, years):
+    countryQuantity = countryQuantity.tolist()
+    years = years.tolist()
+
+    #combine both the lists and randomize while maintaining the mapping 
+    combinedZip = list(zip(years,countryQuantity))
+    random.shuffle(combinedZip) 
+
+    #unzip the combination 
+    years,countryQuantity = zip(*combinedZip) 
+
+    countryQuantity = list(countryQuantity)
+    countryQuantityTrain = countryQuantity[:12]
+
+    years = list(years)
+    yearsTrain = years[:12]
+
+    countryQuantityTest = countryQuantity[12:]
+    yearsTest = years[12:]
+
+    #countryQuantity = countryQuantityTrain 
+    #years = yearsTrain
+
+    countryQuantityTrain = np.asarray(countryQuantityTrain).reshape(-1,1)
+    yearsTrain = np.asarray(yearsTrain).reshape(-1,1)
+
+    countryQuantityTest = np.asarray(countryQuantityTest).reshape(-1,1)
+    yearsTest = np.asarray(yearsTest).reshape(-1,1)
+
+    return countryQuantityTrain, yearsTrain, countryQuantityTest, yearsTest
+    
+    
+    
+    
+        
 
