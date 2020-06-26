@@ -1,7 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 import random 
-
+from itertools import cycle
 
 #extract dataframes corresponding to countries
 def countryDF(country, dataframe):
@@ -55,23 +55,28 @@ def errorComputation(countryDF, countryQuantityPredict, quantity,regression_type
     countryQuantityActual = countryQuantityActual[::-1]
     print(regression_type,'Prediction \n', countryQuantityPredict.T)
     print('Actual \n', countryQuantityActual)
-    error = ((countryQuantityPredict.T - countryQuantityActual)/countryQuantityActual)*100
+    error = (np.absolute((countryQuantityPredict.T - countryQuantityActual))/countryQuantityActual)*100
     return error
     
 
 #error calculation between predicted value and ground truth
-def errorPlot(qty1, error, xlabel, ylabel,regression_type):
-    plt.plot(qty1[::-1],error.T,label=regression_type)
-    plt.plot(qty1[::-1],np.zeros((len(qty1),1)),'k--')
+def errorPlot(qty1, error, xlabel, ylabel,regression_type,color):
+    
+    plt.plot(qty1[::-1], np.ones((len(qty1),1))*np.mean(error.T), '--', c=color, label=regression_type+' mean')
+    print('mean absolute percentage error',regression_type,': ',np.mean(error.T))
+    plt.plot(qty1[::-1],error.T, '-', c=color, label=regression_type)
+    #plt.plot(qty1[::-1],np.zeros((len(qty1),1)),'k--')
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.legend()
 
 
 #matrix randomizer
-def randomizer(countryQuantity, years):
+def randomizer(countryQuantity, years, split):
     countryQuantity = countryQuantity.tolist()
     years = years.tolist()
+     
+    print('Train:Test split is: ',split,':',16-split)
 
     #combine both the lists and randomize while maintaining the mapping 
     combinedZip = list(zip(years,countryQuantity))
@@ -81,13 +86,13 @@ def randomizer(countryQuantity, years):
     years,countryQuantity = zip(*combinedZip) 
 
     countryQuantity = list(countryQuantity)
-    countryQuantityTrain = countryQuantity[:12]
+    countryQuantityTrain = countryQuantity[:split]
 
     years = list(years)
-    yearsTrain = years[:12]
+    yearsTrain = years[:split]
 
-    countryQuantityTest = countryQuantity[12:]
-    yearsTest = years[12:]
+    countryQuantityTest = countryQuantity[split:]
+    yearsTest = years[split:]
 
     #countryQuantity = countryQuantityTrain 
     #years = yearsTrain
