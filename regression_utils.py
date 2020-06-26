@@ -2,15 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import random 
 
+
 #extract dataframes corresponding to countries
 def countryDF(country, dataframe):
     countryData = dataframe[dataframe['Country'] == country]
     return countryData
 
+
 #extract columns
 def columnExtractor(dataframe, columnName):
     values = dataframe[columnName]
     return values 
+
 
 # plot values for dataset columns    
 def plotQuantities(qty1, qty2, xlabel, ylabel, label, title):
@@ -21,10 +24,10 @@ def plotQuantities(qty1, qty2, xlabel, ylabel, label, title):
     plt.legend()
     plt.show()
 
+
 # Plot the function, the prediction and the 95% confidence interval based on the MSE
 def plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTest, countryQuantityTest, yearsPredict, countryQuantityPredict, ylabel, sigma, regression_type):
     plt.figure()
-
     #plt.plot(x, Y, 'r--',label=r'$f(x) = x\,\sin(x)$')
     #actual data 
     plt.scatter(years, countryQuantity,label='Observations')
@@ -45,12 +48,25 @@ def plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTes
     plt.xlabel('Year')
     plt.legend()
 
+
+def errorComputation(countryDF, countryQuantityPredict, quantity,regression_type):
+    #countryQuantityPredict = countryQuantityPredict[::-1]
+    countryQuantityActual = columnExtractor(countryDF,str(quantity)).tolist()
+    countryQuantityActual = countryQuantityActual[::-1]
+    print(regression_type,'Prediction \n', countryQuantityPredict.T)
+    print('Actual \n', countryQuantityActual)
+    error = ((countryQuantityPredict.T - countryQuantityActual)/countryQuantityActual)*100
+    return error
+    
+
 #error calculation between predicted value and ground truth
-def errorPlot(qty1, error, xlabel, ylabel):
-    plt.plot(qty1[::-1],error.T)
+def errorPlot(qty1, error, xlabel, ylabel,regression_type):
+    plt.plot(qty1[::-1],error.T,label=regression_type)
     plt.plot(qty1[::-1],np.zeros((len(qty1),1)),'k--')
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
+    plt.legend()
+
 
 #matrix randomizer
 def randomizer(countryQuantity, years):
