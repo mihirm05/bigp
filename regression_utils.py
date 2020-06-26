@@ -1,7 +1,12 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 import random 
-from itertools import cycle
+
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
+
 
 #extract dataframes corresponding to countries
 def countryDF(country, dataframe):
@@ -104,6 +109,73 @@ def randomizer(countryQuantity, years, split):
     yearsTest = np.asarray(yearsTest).reshape(-1,1)
 
     return countryQuantityTrain, yearsTrain, countryQuantityTest, yearsTest
+
+
+#################GAUSSIAN REGRESSION#################
+# convention followed in relation to scikit documentation 
+
+#def linearRegression(xtrain, ytrain, xtest, ytest, x, y):
+def gaussianRegression(xtrain, ytrain, xtest, ytest, x, y):
+    # Instantiate a Gaussian Process model
+    lengthScale = np.random.randint(50)
+    kernel = C(1.0, (1e-3, 1e3)) * RBF(lengthScale, (1e-2, 1e2))
+    print('length scale is: ',lengthScale)
+    #print(kernel)
+    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=9)
+    
+    # Mesh the input space for evaluations of the real function, the prediction and its MSE
+    #x = np.atleast_2d(np.linspace(0, 10, 1000)).T
+    yearsPredict = np.array(np.linspace(2000, 2015, 16)).reshape(-1,1)
+
+    years = x 
+    countryQuantity = y 
+    
+    yearsTrain = xtrain 
+    countryQuantityTrain = ytrain
+    
+    yearsTest = xtest
+    countryQuantityTest = ytest 
+    
+    # Fit to data using Maximum Likelihood Estimation of the parameters
+    gp.fit(yearsTrain, countryQuantityTrain)
+
+    # Make the prediction on the meshed x-axis (ask for MSE as well)
+    countryQuantityPredict, sigma = gp.predict(yearsPredict, return_std=True)
+
+    #change here 
+    plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTest, countryQuantityTest, yearsPredict, countryQuantityPredict, 'Life Expectancy', sigma, regression_type = 'Gaussian')
+    return countryQuantityPredict, sigma
+
+
+#################LINEAR REGRESSION#################
+# convention followed in relation to scikit documentation 
+
+def linearRegression(xtrain, ytrain, xtest, ytest, x, y):
+    years = x 
+    countryQuantity = y 
+    
+    yearsTrain = xtrain 
+    countryQuantityTrain = ytrain
+    
+    yearsTest = xtest
+    countryQuantityTest = ytest    
+    
+    yearsPredict = np.array(np.linspace(2000, 2015, 16)).reshape(-1,1)
+
+    # # Create linear regression object
+    regr = linear_model.LinearRegression()
+
+    # Train the model using the training sets
+    regr.fit(yearsTrain, countryQuantityTrain)
+
+    # Make predictions using the testing set
+    countryQuantityPredictLR = regr.predict(yearsPredict)
+
+    # Plot outputs
+    plotFinal(years, countryQuantity, yearsTrain, countryQuantityTrain, yearsTest, countryQuantityTest, yearsPredict, countryQuantityPredictLR, 'Life Expectancy',0,regression_type='Linear')
+    return countryQuantityPredictLR
+
+
     
     
     
